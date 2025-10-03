@@ -1,62 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import supabase from '../supabaseClient';
 
-const TaskForm = ({ taskId, onTaskUpdated }) => {
+const TaskForm = ({ selectedTask, onAddTask, onUpdateTask }) => {
   const [taskName, setTaskName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    if (taskId) {
+    if (selectedTask) {
       setIsEditing(true);
-      // Fetch the task data when editing an existing task
-      const fetchTask = async () => {
-        const { data, error } = await supabase
-          .from('tasks')
-          .select('*')
-          .eq('id', taskId)
-          .single();
-        if (data) {
-          setTaskName(data.name);
-        }
-        if (error) {
-          console.error(error.message);
-        }
-      };
-      fetchTask();
+      setTaskName(selectedTask.name);
     } else {
       setIsEditing(false);
       setTaskName('');
     }
-  }, [taskId]);
+  }, [selectedTask]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!taskName.trim()) return; // Don't submit empty tasks
 
-    const taskData = { name: taskName };
-
     if (isEditing) {
-      const { data, error } = await supabase
-        .from('tasks')
-        .update({ name: taskName, updated_at: new Date() })
-        .eq('id', taskId);
-
-      if (error) {
-        console.error('Error updating task:', error.message);
-      } else {
-        onTaskUpdated(); // Notify parent component to refresh the task list
-      }
+      onUpdateTask(selectedTask.id, taskName);
     } else {
-      const { data, error } = await supabase
-        .from('tasks')
-        .insert([taskData]);
-
-      if (error) {
-        console.error('Error creating task:', error.message);
-      } else {
-        onTaskUpdated(); // Notify parent component to refresh the task list
-      }
+      onAddTask(taskName);
     }
 
     setTaskName('');

@@ -5,6 +5,7 @@ import supabase from './supabaseClient'; // Supabase client
 import Login from './component/Login';
 import Register from './component/Register';
 import TaskList from './component/TaskList';
+import TaskForm from './component/TaskForm';
 
 
 function App() {
@@ -52,6 +53,7 @@ function App() {
         <>
           <h2>Welcome, {user.email}</h2>
           <button onClick={handleLogout}>Logout</button> {/* Logout Button */}
+          <TaskForm />
           <TaskList />
         </>
       ) : (

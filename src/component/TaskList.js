@@ -1,42 +1,46 @@
 import React, { useState, useEffect } from 'react';
-import supabase from '../supabaseClient';
 import TaskForm from './TaskForm';
 
 const TaskList = () => {
   const [tasks, setTasks] = useState([]);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [nextId, setNextId] = useState(1); // Counter for generating unique IDs
 
-  // Fetch all tasks from the tasks table
-  const fetchTasks = async () => {
-    const { data, error } = await supabase.from('tasks').select('*');  // Fetch all tasks from Supabase
+  // Add a new task
+  const handleAddTask = (taskName) => {
+    const newTask = {
+      id: nextId,
+      name: taskName,
+      created_at: new Date().toISOString()
+    };
+    setTasks(prevTasks => [...prevTasks, newTask]);
+    setNextId(prevId => prevId + 1);
+    setSelectedTaskId(null);
+  };
 
-    if (error) {
-      console.error('Error fetching tasks:', error.message);
-    } else {
-      console.log('Fetched tasks:', data); // Log fetched tasks to the console
-      setTasks(data); // Set tasks in state
-    }
+  // Update an existing task
+  const handleUpdateTask = (taskId, taskName) => {
+    setTasks(prevTasks => 
+      prevTasks.map(task => 
+        task.id === taskId 
+          ? { ...task, name: taskName, updated_at: new Date().toISOString() }
+          : task
+      )
+    );
+    setSelectedTaskId(null);
   };
 
   // Delete a task
-  const handleDeleteTask = async (taskId) => {
-    const { error } = await supabase.from('tasks').delete().eq('id', taskId);
-    if (error) {
-      console.error('Error deleting task:', error.message);
-    } else {
-      fetchTasks(); // Refresh tasks after deleting
+  const handleDeleteTask = (taskId) => {
+    setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+    if (selectedTaskId === taskId) {
+      setSelectedTaskId(null);
     }
   };
 
-  // Effect hook to fetch tasks when component is mounted
-  useEffect(() => {
-    fetchTasks();  // Fetch all tasks when the component mounts
-  }, []);
-
-  // After a task is created or updated, refresh the tasks list
-  const handleTaskUpdated = () => {
-    fetchTasks();  // Refresh tasks after add/edit
-    setSelectedTaskId(null);  // Deselect task after update
+  // Get the selected task for editing
+  const getSelectedTask = () => {
+    return tasks.find(task => task.id === selectedTaskId);
   };
 
   return (
@@ -44,7 +48,11 @@ const TaskList = () => {
       <h3>Your Tasks</h3>
 
       {/* TaskForm component */}
-      <TaskForm taskId={selectedTaskId} onTaskUpdated={handleTaskUpdated} />
+      <TaskForm 
+        selectedTask={getSelectedTask()}
+        onAddTask={handleAddTask}
+        onUpdateTask={handleUpdateTask}
+      />
 
       {/* Render the list of tasks */}
       <ul>

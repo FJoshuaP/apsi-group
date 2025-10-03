@@ -8,14 +8,17 @@ const Login = ({ setIsLoggedIn, setUser }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    // Bypass credential checking for now - directly set logged in state
-    const mockUser = {
-      email: email || 'demo@example.com',
-      id: 'mock-user-id'
-    };
-    
-    setUser(mockUser);
-    setIsLoggedIn(true);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setUser(data.user);
+      setIsLoggedIn(true);
+    }
   };
 
   return (
