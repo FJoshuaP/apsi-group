@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './styles/App.css';
-import supabase from './supabaseClient'; // Supabase client
+import supabase from './supabaseClient';
 
 import Login from './component/Login';
 import Register from './component/Register';
@@ -8,10 +8,9 @@ import TaskList from './component/TaskList';
 
 
 function App() {
-  const [user, setUser] = useState(null); // State for logged-in user
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login status
+  const [user, setUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Check if there's a logged-in user on app load
   useEffect(() => {
     const fetchSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -20,7 +19,6 @@ function App() {
         setIsLoggedIn(true);
       }
 
-      // Listen for auth state changes
       supabase.auth.onAuthStateChange((_event, session) => {
         if (session) {
           setUser(session.user);
@@ -35,14 +33,13 @@ function App() {
     fetchSession();
   }, []);
 
-  // Logout function
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error('Error logging out:', error.message);
     } else {
       setIsLoggedIn(false);
-      setUser(null); // Clear user data
+      setUser(null);
     }
   };
 
@@ -50,8 +47,15 @@ function App() {
     <div className="App">
       {isLoggedIn ? (
         <>
-          <h2>Welcome, {user.email}</h2>
-          <button onClick={handleLogout}>Logout</button> {/* Logout Button */}
+          <div className="app-header">
+            <div className="header-content">
+              <h1 className="app-title">Task Manager</h1>
+              <button onClick={handleLogout} className="btn-logout">
+                <span className="logout-icon">→</span>
+                Logout
+              </button>
+            </div>
+          </div>
           <TaskList />
         </>
       ) : (
