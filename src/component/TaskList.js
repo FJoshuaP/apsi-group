@@ -4,9 +4,8 @@ import TaskForm from './TaskForm';
 const TaskList = () => {
   const [tasks, setTasks] = useState([]);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
-  const [nextId, setNextId] = useState(1); // Counter for generating unique IDs
+  const [nextId, setNextId] = useState(1);
 
-  // Add a new task
   const handleAddTask = (taskName) => {
     const newTask = {
       id: nextId,
@@ -18,7 +17,6 @@ const TaskList = () => {
     setSelectedTaskId(null);
   };
 
-  // Update an existing task
   const handleUpdateTask = (taskId, taskName) => {
     setTasks(prevTasks => 
       prevTasks.map(task => 
@@ -30,7 +28,6 @@ const TaskList = () => {
     setSelectedTaskId(null);
   };
 
-  // Delete a task
   const handleDeleteTask = (taskId) => {
     setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
     if (selectedTaskId === taskId) {
@@ -38,36 +35,62 @@ const TaskList = () => {
     }
   };
 
-  // Get the selected task for editing
   const getSelectedTask = () => {
     return tasks.find(task => task.id === selectedTaskId);
   };
 
   return (
-    <div className="task-list">
-      <h3>Your Tasks</h3>
+    <div className="task-container">
+      <div className="task-header">
+        <h2>My Tasks</h2>
+        <p className="task-count">{tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}</p>
+      </div>
 
-      {/* TaskForm component */}
       <TaskForm 
         selectedTask={getSelectedTask()}
         onAddTask={handleAddTask}
         onUpdateTask={handleUpdateTask}
       />
 
-      {/* Render the list of tasks */}
-      <ul>
+      <div className="tasks-wrapper">
         {tasks.length > 0 ? (
-          tasks.map((task) => (
-            <li key={task.id} className="task-item">
-              <span>{task.name}</span>
-              <button onClick={() => setSelectedTaskId(task.id)}>Edit</button>
-              <button onClick={() => handleDeleteTask(task.id)}>Delete</button>
-            </li>
-          ))
+          <ul className="task-list">
+            {tasks.map((task) => (
+              <li 
+                key={task.id} 
+                className={`task-item ${selectedTaskId === task.id ? 'editing' : ''}`}
+              >
+                <div className="task-content">
+                  <div className="task-check"></div>
+                  <span className="task-name">{task.name}</span>
+                </div>
+                <div className="task-actions">
+                  <button 
+                    onClick={() => setSelectedTaskId(task.id)}
+                    className="btn-icon btn-edit"
+                    title="Edit task"
+                  >
+                    ✎
+                  </button>
+                  <button 
+                    onClick={() => handleDeleteTask(task.id)}
+                    className="btn-icon btn-delete"
+                    title="Delete task"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
         ) : (
-          <li>No tasks available</li>
+          <div className="empty-state">
+            <div className="empty-icon">📝</div>
+            <h3>No tasks yet</h3>
+            <p>Add your first task to get started!</p>
+          </div>
         )}
-      </ul>
+      </div>
     </div>
   );
 };

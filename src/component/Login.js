@@ -8,7 +8,6 @@ const Login = ({ setIsLoggedIn, setUser }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    // Bypass credential checking for now - directly set logged in state
     const mockUser = {
       email: email || 'demo@example.com',
       id: 'mock-user-id'
@@ -19,26 +18,46 @@ const Login = ({ setIsLoggedIn, setUser }) => {
   };
 
   return (
-    <div className="auth-form">
-      <h3>Login</h3>
-      {error && <p className="error">{error}</p>}
-      <form onSubmit={handleLogin}>
-        <input 
-          type="email" 
-          placeholder="Email" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
-          required 
-        />
-        <input 
-          type="password" 
-          placeholder="Password" 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          required 
-        />
-        <button type="submit">Login</button>
-      </form>
+    <div className="auth-container">
+      <div className="auth-card">
+        <div className="auth-header">
+          <h2>Welcome Back</h2>
+          <p>Sign in to continue to your tasks</p>
+        </div>
+        {error && (
+          <div className="error-message">
+            <span>⚠️</span>
+            <p>{error}</p>
+          </div>
+        )}
+        <form onSubmit={handleLogin} className="auth-form">
+          <div className="form-group">
+            <label htmlFor="email">Email Address</label>
+            <input 
+              id="email"
+              type="email" 
+              placeholder="you@example.com" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required 
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input 
+              id="password"
+              type="password" 
+              placeholder="••••••••" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+            />
+          </div>
+          <button type="submit" className="btn-primary">
+            Sign In
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

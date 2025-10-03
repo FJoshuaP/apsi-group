@@ -17,7 +17,7 @@ const TaskForm = ({ selectedTask, onAddTask, onUpdateTask }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!taskName.trim()) return; // Don't submit empty tasks
+    if (!taskName.trim()) return;
 
     if (isEditing) {
       onUpdateTask(selectedTask.id, taskName);
@@ -29,17 +29,29 @@ const TaskForm = ({ selectedTask, onAddTask, onUpdateTask }) => {
   };
 
   return (
-    <div className="task-form">
-      <h3>{isEditing ? 'Edit Task' : 'Add Task'}</h3>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Task Name"
-          value={taskName}
-          onChange={(e) => setTaskName(e.target.value)}
-          required
-        />
-        <button type="submit">{isEditing ? 'Update' : 'Add'} Task</button>
+    <div className="task-form-container">
+      <form onSubmit={handleSubmit} className="task-form">
+        <div className="form-input-wrapper">
+          <input
+            type="text"
+            placeholder={isEditing ? "Update task name..." : "Add a new task..."}
+            value={taskName}
+            onChange={(e) => setTaskName(e.target.value)}
+            required
+            className="task-input"
+          />
+          <button type="submit" className={isEditing ? "btn-update" : "btn-add"}>
+            {isEditing ? (
+              <>
+                <span>✓</span> Update
+              </>
+            ) : (
+              <>
+                <span>+</span> Add Task
+              </>
+            )}
+          </button>
+        </div>
       </form>
     </div>
   );
