@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import supabase from '../supabaseClient';
+import  supabase  from '../supabaseClient';
 
 const TaskForm = ({ taskId, onTaskUpdated }) => {
   const [taskName, setTaskName] = useState('');
