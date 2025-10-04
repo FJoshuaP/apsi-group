@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../supabaseClient';
-import TaskForm from './TaskForm';
+import TaskForm from './origTaskForm';
 
 const TaskList = () => {
   const [tasks, setTasks] = useState([]);
@@ -40,26 +40,54 @@ const TaskList = () => {
   };
 
   return (
-    <div className="task-list">
-      <h3>Your Tasks</h3>
+    <div className="task-container">
+      <div className="task-header">
+        <h2>My Tasks</h2>
+        <p className="task-count">{tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}</p>
+      </div>
 
       {/* TaskForm component */}
       <TaskForm taskId={selectedTaskId} onTaskUpdated={handleTaskUpdated} />
 
-      {/* Render the list of tasks */}
-      <ul>
+      <div className="tasks-wrapper">
         {tasks.length > 0 ? (
-          tasks.map((task) => (
-            <li key={task.id} className="task-item">
-              <span>{task.name}</span>
-              <button onClick={() => setSelectedTaskId(task.id)}>Edit</button>
-              <button onClick={() => handleDeleteTask(task.id)}>Delete</button>
-            </li>
-          ))
+          <ul className="task-list">
+            {tasks.map((task) => (
+              <li 
+                key={task.id} 
+                className={`task-item ${selectedTaskId === task.id ? 'editing' : ''}`}
+              >
+                <div className="task-content">
+                  <div className="task-check"></div>
+                  <span className="task-name">{task.name}</span>
+                </div>
+                <div className="task-actions">
+                  <button 
+                    onClick={() => setSelectedTaskId(task.id)}
+                    className="btn-icon btn-edit"
+                    title="Edit task"
+                  >
+                    ✎
+                  </button>
+                  <button 
+                    onClick={() => handleDeleteTask(task.id)}
+                    className="btn-icon btn-delete"
+                    title="Delete task"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
         ) : (
-          <li>No tasks available</li>
+          <div className="empty-state">
+            <div className="empty-icon">📝</div>
+            <h3>No tasks yet</h3>
+            <p>Add your first task to get started!</p>
+          </div>
         )}
-      </ul>
+      </div>
     </div>
   );
 };

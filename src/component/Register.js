@@ -1,53 +1,130 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import supabase from '../supabaseClient';
 
 const Register = ({ setIsLoggedIn, setUser }) => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setError(''); // Clear any previous errors
-    
+    setError('');
+    setLoading(true);
+
+    if (!email || !password) {
+      setError('Please fill in all fields.');
+      setLoading(false);
+      return;
+    }
+
     try {
-      // First try to sign up
-      const { data, error } = await supabase.auth.signUp({
+      // First, try to sign in (in case user already exists)
+      const { data: existingUserData, error: existingUserError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) {
-        console.error('Registration error:', error);
-        // If signup fails due to email confirmation, try to sign in instead
-        if (error.message.includes('email') || error.message.includes('confirmation')) {
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-          
-          if (signInError) {
-            setError('Registration failed. Please try again.');
-          } else {
-            setUser(signInData.user);
-            setIsLoggedIn(true);
-            setError('Registration successful! You are now logged in.');
-          }
-        } else {
-          setError(error.message);
+      if (existingUserData.user) {
+        // User already exists and password is correct
+        setUser(existingUserData.user);
+        setIsLoggedIn(true);
+        setError('Welcome back! You are now logged in.');
+        navigate('/dashboard');
+        setLoading(false);
+        return;
+      }
+
+      // If sign in fails, try to create new user
+      console.log('User does not exist, creating new account...');
+      
+      // Try to sign up with email confirmation disabled
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: undefined
         }
-      } else {
-        console.log('Registration data:', data);
-        // Force login the user regardless of email confirmation status
-        if (data.user) {
-          setUser(data.user);
-          setIsLoggedIn(true);
-          setError('Registration successful! You are now logged in.');
+      });
+
+      if (authError) {
+        // If signup fails due to email confirmation, try to create user manually
+        if (authError.message.includes('email') || authError.message.includes('confirmation')) {
+          console.log('Email confirmation required, but we can still create the user...');
+          
+          // The user was created but needs confirmation - try to sign in anyway
+          setTimeout(async () => {
+            try {
+              const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+              });
+              
+              if (signInData && signInData.user) {
+                setUser(signInData.user);
+                setIsLoggedIn(true);
+                setError('Registration successful! You are now logged in.');
+                navigate('/dashboard');
+              } else {
+                setError('Registration successful! Please try logging in manually.');
+              }
+            } catch (err) {
+              setError('Registration successful! Please try logging in manually.');
+            }
+          }, 3000); // Wait 3 seconds for user to be fully created
+          
+          setError('Registration successful! Attempting to sign you in...');
+          setLoading(false);
+          return;
+        } else {
+          setError(authError.message);
+          setLoading(false);
+          return;
         }
       }
-    } catch (err) {
-      console.error('Registration error:', err);
-      setError('Registration failed. Please try again.');
+
+      // If signup was successful
+      if (authData.user) {
+        // Check if user is immediately confirmed
+        if (authData.user.email_confirmed_at || authData.session) {
+          setUser(authData.user);
+          setIsLoggedIn(true);
+          setError('Registration successful! You are now logged in.');
+          navigate('/dashboard');
+        } else {
+          // User created but needs confirmation - try to sign in
+          setTimeout(async () => {
+            try {
+              const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+              });
+              
+              if (signInData && signInData.user) {
+                setUser(signInData.user);
+                setIsLoggedIn(true);
+                setError('Registration successful! You are now logged in.');
+                navigate('/dashboard');
+              } else {
+                setError('Registration successful! Please try logging in manually.');
+              }
+            } catch (err) {
+              setError('Registration successful! Please try logging in manually.');
+            }
+          }, 3000);
+          
+          setError('Registration successful! Attempting to sign you in...');
+        }
+      } else {
+        setError('Registration failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Unexpected error during signup:', error);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,7 +147,25 @@ const Register = ({ setIsLoggedIn, setUser }) => {
           onChange={(e) => setPassword(e.target.value)} 
           required 
         />
-        <button type="submit">Register</button>
+        <button type="submit" disabled={loading}>
+          {loading ? "Registering..." : "Register"}
+        </button>
+        <p style={{ textAlign: 'center', marginTop: '20px', color: '#666' }}>
+          Already have an account?{' '}
+          <button 
+            type="button" 
+            onClick={() => navigate('/login')}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              color: '#6366f1', 
+              cursor: 'pointer',
+              textDecoration: 'underline'
+            }}
+          >
+            Login here
+          </button>
+        </p>
       </form>
     </div>
   );

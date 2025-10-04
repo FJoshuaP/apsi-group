@@ -63,18 +63,31 @@ const TaskForm = ({ taskId, onTaskUpdated }) => {
   };
 
   return (
-    <div className="task-form">
-      <h3>{isEditing ? 'Edit Task' : 'Add Task'}</h3>
+    <div className="task-form-container">
       <form onSubmit={handleSubmit}>
+        <div className="form-input-wrapper">
         <input
-          type="text"
-          placeholder="Task Name"
-          value={taskName}
-          onChange={(e) => setTaskName(e.target.value)}
-          required
+           type="text"
+            placeholder={isEditing ? "Update task name..." : "Add a new task..."}
+            value={taskName}
+            onChange={(e) => setTaskName(e.target.value)}
+            required
+            className="task-input"
         />
-        <button type="submit">{isEditing ? 'Update' : 'Add'} Task</button>
+        <button type="submit" className={isEditing ? "btn-update" : "btn-add"}>
+            {isEditing ? (
+              <>
+                <span>✓</span> Update
+              </>
+            ) : (
+              <>
+                <span>+</span> Add Task
+              </>
+            )}
+          </button>
+        </div>
       </form>
+      
     </div>
   );
 };
